@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SENTINEL · Centro de operaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --bg-deep: #000000;
+    --sf: #0a0a0a;
+    --sf2: #121212;
+    --sf3: #1a1a1a;
+    --tx: #ffffff;
+    --mu: #b3b3b3;
+    --ac: #ff1e38;
+    --ac-dim: rgba(255, 30, 56, 0.14);
+    --ac2: #b91c1c;
+    --ok: #ffffff;
+    --wa: #ff8c00;
+    --er: #ff1e38;
+    --bd: rgba(255, 255, 255, 0.22);
+    --bd-red: rgba(255, 30, 56, 0.55);
+    --bd-soft: rgba(255, 255, 255, 0.14);
+    --gl: rgba(255, 30, 56, 0.25);
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    --sans: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    color: var(--tx);
+    font: 15px/1.6 var(--sans);
+    background:
+      radial-gradient(900px 520px at 85% -5%, rgba(255, 30, 56, 0.14), transparent 62%),
+      radial-gradient(700px 480px at 5% 45%, rgba(255, 255, 255, 0.04), transparent 60%),
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 44px 44px,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 44px 44px,
+      #000000;
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* Barra de navegación negro puro + blanco + rojo */
+  nav {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 25;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--bd);
+    box-shadow: 0 6px 26px rgba(0, 0, 0, 0.95);
+    overflow-x: auto;
+  }
+  .logo {
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    margin-right: auto;
+    white-space: nowrap;
+    font-size: 14px;
+    color: #ffffff;
+  }
+  .logo i {
+    color: var(--ac);
+    font-style: normal;
+    text-shadow: 0 0 12px rgba(255, 30, 56, 0.8);
+  }
+  nav a {
+    color: #cccccc;
+    text-decoration: none;
+    padding: 6px 13px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+  nav a:hover {
+    color: #ffffff;
+    background: var(--ac-dim);
+    border-color: var(--ac);
+  }
+
+  section {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 64px 18px 42px;
+    min-height: 70vh;
+  }
+  .rv { transform-origin: top center; will-change: transform, opacity; }
+  .num {
+    font: 700 12px var(--mono);
+    color: var(--ac);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  h2 {
+    margin: 4px 0 6px;
+    font-size: clamp(24px, 3.8vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+  .sub {
+    color: var(--mu);
+    margin: 0 0 18px;
+    max-width: 720px;
+    font-size: 14.5px;
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding-top: 90px; }
+  .hero h1 {
+    font-size: clamp(34px, 6.8vw, 66px);
+    line-height: 1.06;
+    margin: 12px 0;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+  }
+  .hero h1 span {
+    background: linear-gradient(120deg, #ffffff 15%, #ff1e38 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Contenedores negro carbón con bordes blanco/rojo */
+  .box {
+    background: var(--sf);
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.95);
+    position: relative;
+  }
+
+  /* Botones tácticos Negro, Blanco y Rojo */
+  button {
+    font: 600 13.5px var(--sans);
+    color: #ffffff;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 10px;
+    padding: 9px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  button:hover:not(:disabled) {
+    border-color: #ffffff;
+    background: #ffffff;
+    color: #000000;
+    transform: translateY(-1px);
+  }
+  button:disabled { opacity: 0.32; cursor: default; transform: none; }
+  .pri {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    font-weight: 700;
+  }
+  .pri:hover:not(:disabled) {
+    background: var(--ac);
+    border-color: var(--ac);
+    color: #ffffff;
+    box-shadow: 0 0 22px rgba(255, 30, 56, 0.55);
+  }
+  .bad {
+    background: var(--ac);
+    color: #ffffff;
+    border: 1px solid var(--ac);
+    font-weight: 700;
+    box-shadow: 0 0 20px rgba(255, 30, 56, 0.4);
+  }
+  .bad:hover:not(:disabled) {
+    background: #d90429;
+    border-color: #ffffff;
+    color: #ffffff;
+    box-shadow: 0 0 28px rgba(255, 30, 56, 0.75);
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+
+  /* Layout paralelo: Mapa ampliado + Monitor en ejecución */
+  .map-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+  @media (min-width: 960px) {
+    .map-split { grid-template-columns: 1.25fr 0.75fr; }
+  }
+
+  .svg-frame {
+    margin-top: 12px;
+    background: #030303;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 14px;
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  #mapbox svg {
+    width: 100%;
+    height: auto;
+    min-height: 430px;
+    max-height: 58vh;
+    display: block;
+    margin: 0 auto;
+    user-select: none;
+  }
+
+  /* Aristas y Nodos HUD en Negro, Blanco y Rojo */
+  .ed {
+    stroke: rgba(255, 255, 255, 0.45);
+    stroke-width: 2.3;
+    transition: stroke 0.3s;
+  }
+  .ed.hot {
+    stroke: var(--er);
+    stroke-width: 3.2;
+    stroke-dasharray: 8 4;
+    animation: dashFlow 0.55s linear infinite;
+  }
+  @keyframes dashFlow { to { stroke-dashoffset: -12; } }
+
+  .nd { cursor: pointer; transition: transform 0.2s ease; }
+  .nd .core {
+    fill: #080808;
+    stroke-width: 2.8;
+    transition: all 0.25s ease;
+  }
+  .nd .halo {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 2.4;
+    stroke-dasharray: 6 4;
+    transition: all 0.25s ease;
+  }
+  .nd:hover .core { fill: #1c1c1c; }
+
+  /* Etiquetas de nodos grandes y nítidas */
+  .nd text {
+    fill: #ffffff;
+    font: 700 13px var(--sans);
+    text-anchor: middle;
+    pointer-events: none;
+    paint-order: stroke fill;
+    stroke: #000000;
+    stroke-width: 4.5px;
+    stroke-linejoin: round;
+    letter-spacing: 0.01em;
+  }
+
+  /* Estados de nodo: Operativo (Blanco puro), Degradado (Ámbar/Rojo suave), Caído (Rojo intenso) */
+  .s-ok .core {
+    stroke: #ffffff;
+    fill: #0d0d0d;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+  }
+  .s-deg .core {
+    stroke: #ff8c00;
+    fill: #241300;
+    filter: drop-shadow(0 0 9px rgba(255, 140, 0, 0.65));
+  }
+  .s-fail .core {
+    stroke: var(--er);
+    fill: #330309;
+    filter: drop-shadow(0 0 14px rgba(255, 30, 56, 0.9));
+  }
+
+  /* Selección múltiple HUD en Rojo / Blanco */
+  .nd.sel .halo {
+    stroke: var(--ac);
+    filter: drop-shadow(0 0 8px var(--ac));
+    animation: spinHalo 8s linear infinite;
+  }
+  .nd.sel .core {
+    stroke-width: 3.6;
+  }
+  @keyframes spinHalo { to { stroke-dashoffset: -52; } }
+
+  .kp {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+    color: var(--mu);
+    font-size: 13.5px;
+    font-family: var(--mono);
+  }
+  .kp b { color: #ffffff; font-size: 18px; }
+  .kp .c-ok b { color: #ffffff; }
+  .kp .c-deg b { color: #ff8c00; }
+  .kp .c-fail b { color: var(--er); }
+
+  .sel-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: #111111;
+    border: 1px solid rgba(255, 30, 56, 0.45);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #ffffff;
+    margin-top: 8px;
+  }
+  .sel-bar strong { color: var(--ac); font-family: var(--mono); }
+
+  .li {
+    font-size: 13.5px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--bd-soft);
+    color: #cccccc;
+  }
+  .li.cur { color: var(--ac); font-weight: 700; }
+  .tr {
+    font: 13px/1.6 var(--mono);
+    white-space: pre;
+    overflow-x: auto;
+    color: #ffffff;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .grid h3 { margin: 0 0 6px; font-size: 15px; color: var(--ac); }
+  .grid p { margin: 0; color: var(--mu); font-size: 13.5px; }
+  .ban { color: var(--ac); font-size: 12.5px; min-height: 18px; font-family: var(--mono); font-weight: 600; }
+
+  /* Orbe JARVIS Negro, Blanco y Rojo */
+  .orbw { display: grid; place-items: center; padding: 20px 0; }
+  .orb {
+    width: 146px;
+    height: 146px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0%, #ff1e38 48%, #000000 82%);
+    box-shadow: 0 0 42px rgba(255, 30, 56, 0.55), inset 0 0 22px rgba(255, 255, 255, 0.35);
+    padding: 0;
+    position: relative;
+  }
+  .orb.listening {
+    animation: pl 1s infinite;
+    border-color: #ffffff;
+    box-shadow: 0 0 52px rgba(255, 255, 255, 0.85);
+  }
+  .orb.thinking { animation: sp 1.1s linear infinite; border-style: dashed; border-color: var(--ac); }
+  .orb.speaking {
+    animation: pl 0.55s infinite;
+    border-color: var(--ac);
+    box-shadow: 0 0 58px rgba(255, 30, 56, 0.95);
+  }
+  .orb.error { border-color: var(--er); box-shadow: 0 0 44px var(--er); }
+  @keyframes pl { 50% { transform: scale(1.09); } }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  .ov {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.97);
+    text-align: center;
+    padding: 24px;
+  }
+  .ov.off { display: none; }
+  .ov .orb { margin: 0 auto 18px; width: 126px; height: 126px; }
+
+  .mic {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .pulse { animation: pl 1s infinite; }
+  select {
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font: inherit;
+    max-width: 65vw;
+  }
+
+  /* Monitor de servicios Negro / Blanco / Rojo */
+  .tile {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    padding: 8px 9px;
+    background: #050505;
+    transition: 0.25s;
+  }
+  .tile b { font-size: 12.5px; color: #ffffff; }
+  .tile .v { display: block; font: 11px var(--mono); color: #b3b3b3; margin: 2px 0 3px; }
+  .tile svg { height: 22px; max-height: none; width: 100%; }
+  .tile polyline { fill: none; stroke: #ffffff; stroke-width: 1.7; }
+  .tile.deg { border-color: #ff8c00; }
+  .tile.deg polyline { stroke: #ff8c00; }
+  .tile.fail {
+    border-color: var(--er);
+    background: #240308;
+    box-shadow: 0 0 18px -4px var(--er);
+  }
+  .tile.fail polyline { stroke: var(--er); }
+  .mon {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+    gap: 7px;
+  }
+  .con {
+    margin-top: 12px;
+    height: 185px;
+    overflow: hidden;
+    background: #000000;
+    color: #e5e5e5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    font: 11.5px/1.5 var(--mono);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .con .w { color: #ff8c00; }
+  .con .e { color: var(--er); font-weight: 600; }
+
+  .alarm { animation: al 0.85s; }
+  @keyframes al { 30% { box-shadow: 0 0 64px var(--er); border-color: var(--er); } }
+
+  /* Burbuja estable en esquina inferior derecha (un toque habla / otro detiene) */
+  .bub {
+    position: fixed;
+    right: 18px;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .bub .orb {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    font-size: 21px;
+    color: #ffffff;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+  }
+  .bub-tag {
+    background: #080808;
+    border: 1px solid rgba(255, 30, 56, 0.6);
+    border-radius: 99px;
+    padding: 7px 15px;
+    font: 600 12px var(--mono);
+    color: #ffffff;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.95);
+    max-width: 245px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--mu);
+    font-size: 12.5px;
+    padding: 32px 18px 110px;
+    border-top: 1px solid var(--bd-soft);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ed.hot, .orb, .nd.sel .halo { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">SENTINEL<i> ◈ </i>OPS</span>
+  <a data-go="s1">Inicio</a>
+  <a data-go="s2">Mapa</a>
+  <a data-go="s3">Alertas</a>
+  <a data-go="s4">Impacto</a>
+  <a data-go="s5">Historial</a>
+  <a data-go="s6">JARVIS</a>
+</nav>
+
+<section id="s1" class="hero">
+  <div class="rv">
+    <div class="num">01 · CENTRO DE MANDO</div>
+    <h1>Provoca fallas múltiples.<br><span>Observa la cascada en tiempo real.</span></h1>
+    <p class="sub" style="margin:0 auto 22px">Simulador táctico de infraestructura digital impulsado por grafos, colas FIFO, pilas, listas doblemente enlazadas y árboles, asistido por voz mediante JARVIS.</p>
+    <div class="row" style="justify-content:center">
+      <button class="pri" data-go="s2">Abrir mapa táctico</button>
+      <button data-go="s6">Configurar JARVIS</button>
+    </div>
+    <div class="grid" style="margin-top:38px;text-align:left">
+      <div class="box">
+        <h3>Selección múltiple</h3>
+        <p>Marca uno o varios nodos en el grafo para simular fallas simultáneas y analizar su impacto combinado.</p>
+      </div>
+      <div class="box">
+        <h3>Telemetría en vivo</h3>
+        <p>El monitor de servicios junto al mapa muestra latencias, gráficas en tiempo real y registros de error.</p>
+      </div>
+      <div class="box">
+        <h3>Control por voz</h3>
+        <p>Pulsa la burbuja inferior derecha para hablar con JARVIS; vuelve a pulsarla para detenerlo al instante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="rv">
+    <div class="num">02 · MAPA DE DEPENDENCIAS Y TELEMETRÍA</div>
+    <h2>Topología y monitor en ejecución</h2>
+    <p class="sub">Una flecha A → B indica que A depende de B. Haz clic en varios nodos para seleccionarlos y ejecutar acciones conjuntas.</p>
+
+    <div class="map-split">
+      <!-- Panel Izquierdo: Grafo Interactivo -->
+      <div class="box" id="mapbox">
+        <div class="kp" id="kp"></div>
+        <div class="row" style="margin:0 0 8px">
+          <button class="bad" id="bf">⚡ Provocar falla</button>
+          <button id="br">Recuperar</button>
+          <button id="bc">Limpiar selección</button>
+          <button id="bu">↶ Deshacer</button>
+          <button id="bz">Reiniciar</button>
+        </div>
+        <div class="ban" id="ban"></div>
+        <div class="sel-bar" id="sel"></div>
+
+        <div class="svg-frame">
+          <svg viewBox="0 0 760 520" aria-label="Grafo de dependencias de infraestructura">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 1L10 5L0 9z" fill="#ffffff"/>
+              </marker>
+              <marker id="ar-hot" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 1L10 5L0 9z" fill="#ff1e38"/>
+              </marker>
+            </defs>
+            <g id="E"></g>
+            <g id="V"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Panel Derecho: Monitor en vivo -->
+      <div class="box" style="display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <h3 style="margin:0 0 10px;font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ac)">Monitor de servicios en ejecución</h3>
+          <div class="mon" id="mon"></div>
+        </div>
+        <div class="con" id="con"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="rv">
+    <div class="num">03 · COLA DE ALERTAS</div>
+    <h2>Cola de alertas (FIFO)</h2>
+    <p class="sub">Estructura First-In, First-Out: la primera incidencia registrada es la primera en ser atendida.</p>
+    <div class="box">
+      <div id="al"></div>
+      <div class="row"><button class="pri" id="ba">Atender siguiente alerta</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="rv">
+    <div class="num">04 · ÁRBOL DE IMPACTO</div>
+    <h2>Propagación BFS y dependencias DFS</h2>
+    <p class="sub">BFS traza el árbol de caída desde las causas raíz. DFS recursivo lista las dependencias del último nodo seleccionado.</p>
+    <div class="box"><div class="tr" id="tr"></div></div>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="rv">
+    <div class="num">05 · LÍNEA DE TIEMPO</div>
+    <h2>Historial de eventos</h2>
+    <p class="sub">Lista doblemente enlazada: navega hacia atrás o adelante para inspeccionar cada instante de la simulación.</p>
+    <div class="box">
+      <div id="tl"></div>
+      <div class="row">
+        <button id="bp">◀ Anterior</button>
+        <button id="bn">Siguiente ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="rv">
+    <div class="num">06 · ASISTENTE JARVIS</div>
+    <h2>Control por voz</h2>
+    <p class="sub">Toca la burbuja flotante inferior derecha para hablar con JARVIS y vuelve a tocarla para detenerlo.</p>
+    <div class="box">
+      <div class="orbw"><button class="orb" id="orb" aria-label="Activar o detener JARVIS"></button></div>
+      <div style="text-align:center;color:var(--ac);font-family:var(--mono);font-size:13px" id="vl2"></div>
+      <div class="mic">
+        <button class="pri" id="bm">🎤 Activar micrófono</button>
+        <button id="bt">▶ Repetir presentación</button>
+        <label style="color:var(--mu);font-size:13px">Voz <select id="vsel"></select></label>
+      </div>
+      <div style="text-align:center;font-size:12.5px;color:var(--mu);margin-top:8px" id="ms">Permiso del micrófono: sin verificar</div>
+      <div class="grid" style="margin-top:16px">
+        <div>
+          <h3>Fallas múltiples</h3>
+          <p>“Provoca falla en API y Storage”<br>“Simulacro de caos doble”<br>“Recupera todo”</p>
+        </div>
+        <div>
+          <h3>Navegación directa</h3>
+          <p>“Llévame a alertas”<br>“Ve al historial”<br>“Ir a inicio”</p>
+        </div>
+        <div>
+          <h3>Diagnóstico</h3>
+          <p>“Punto más crítico”<br>“Estado del sistema”<br>“Atiende alerta”</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>SENTINEL Ops · Estructuras de Datos y Algoritmos · Reconocimiento de voz optimizado para Chrome y Edge</footer>
+
+<!-- Pantalla de bienvenida inicial -->
+<div class="ov" id="ov">
+  <div>
+    <button class="orb" id="orb3" aria-label="Iniciar presentación"></button>
+    <h2 style="letter-spacing:0.15em">J.A.R.V.I.S.</h2>
+    <p class="sub" style="margin:0 auto 20px">Presentación ejecutiva de SENTINEL Ops. Pulse iniciar para habilitar el sistema de audio.</p>
+    <div class="row" style="justify-content:center">
+      <button class="pri" id="bs">▶ Iniciar protocolo</button>
+      <button id="bk">Omitir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Burbuja estable en esquina inferior derecha (un toque habla, otro detiene) -->
+<div class="bub">
+  <span class="bub-tag" id="vl">Pulse para hablar</span>
+  <button class="orb" id="orb2" aria-label="Pulsar para hablar o detener" title="Pulsar para hablar o detener">🎙️</button>
+</div>
+
+<script>
+// Coordenadas amplias en viewBox 760x520 para máxima legibilidad
+const N = {
+  web:     ['Web',           380,  52, ['lb', 'cdn']],
+  lb:      ['Balanceador',   190, 152, ['api']],
+  cdn:     ['CDN',           570, 152, ['storage']],
+  api:     ['API',           190, 262, ['auth', 'cache', 'db']],
+  worker:  ['Worker',        450, 262, ['queue', 'db']],
+  auth:    ['Auth',           68, 372, ['db']],
+  cache:   ['Caché',         255, 372, []],
+  queue:   ['Mensajería',    450, 372, ['storage']],
+  db:      ['Base de datos', 140, 466, []],
+  storage: ['Storage',       555, 466, []]
+};
+
+const ids = Object.keys(N), dep = i => N[i][3], nm = i => N[i][0], rev = {};
+ids.forEach(i => rev[i] = []);
+ids.forEach(i => dep(i).forEach(d => rev[d].push(i)));
+
+const $ = s => document.querySelector(s), SV = 'http://www.w3.org/2000/svg';
+const NODE_R = 35;
+
+class Queue {
+  constructor() { this.a = []; this.h = 0; }
+  push(x) { this.a.push(x); }
+  shift() { return this.a[this.h++]; }
+  get size() { return this.a.length - this.h; }
+  items() { return this.a.slice(this.h); }
+  clear() { this.a = []; this.h = 0; }
+}
+
+class DLL {
+  constructor() { this.head = this.tail = this.cur = null; }
+  add(v) {
+    const n = { v, p: this.tail, nx: null };
+    this.tail ? (this.tail.nx = n) : (this.head = n);
+    this.tail = this.cur = n;
+  }
+  prev() { if (this.cur && this.cur.p) this.cur = this.cur.p; }
+  next() { if (this.cur && this.cur.nx) this.cur = this.cur.nx; }
+  all() {
+    const o = [];
+    for (let n = this.head; n; n = n.nx) o.push(n);
+    return o;
+  }
+}
+
+class Stack {
+  constructor() { this.a = []; }
+  push(x) { this.a.push(x); }
+  pop() { return this.a.pop(); }
+  get size() { return this.a.length; }
+}
+
+function bfs(roots) {
+  const lv = {}, par = {}, q = new Queue();
+  roots.forEach(r => { lv[r] = 0; q.push(r); });
+  while (q.size) {
+    const u = q.shift();
+    rev[u].forEach(v => {
+      if (!(v in lv)) {
+        lv[v] = lv[u] + 1;
+        par[v] = u;
+        q.push(v);
+      }
+    });
+  }
+  return { lv, par };
+}
+
+function dfs(id, seen = new Set(), d = 0, out = []) {
+  seen.add(id);
+  out.push([id, d]);
+  dep(id).forEach(x => {
+    if (!seen.has(x)) dfs(x, seen, d + 1, out);
+  });
+  return out;
+}
+
+let roots = new Set(), selected = new Set(['db']), lastSel = 'db', view = null, shown = new Set(), T = [];
+const AQ = new Queue(), UN = new Stack(), TL = new DLL();
+
+const cur = () => view || [...roots];
+const clearT = () => { T.forEach(clearInterval); T = []; };
+const allAff = R => new Set(Object.keys(bfs(R).lv));
+
+function status(id, R = cur()) {
+  const { lv } = bfs(R);
+  if (!(id in lv)) return 'ok';
+  if (!view && !shown.has(id)) return 'ok';
+  return R.includes(id) ? 'fail' : 'deg';
+}
+
+function ev(m) {
+  TL.add({ t: new Date().toLocaleTimeString('es'), msg: m, snap: [...roots] });
+  view = null;
+}
+
+function act(fn) {
+  UN.push([...roots]);
+  fn();
+}
+
+function failMany(list) {
+  const targets = list.filter(id => !roots.has(id));
+  if (!targets.length) return [];
+  act(() => {
+    targets.forEach(id => {
+      roots.add(id);
+      shown.add(id);
+      AQ.push({ s: 'CRÍTICA', m: nm(id) + ' caído' });
+      logl('e', 'ALERTA: ' + nm(id) + ' fuera de servicio');
+    });
+    ev('Falla en ' + targets.map(nm).join(', '));
+    const b = $('#mapbox');
+    b.classList.remove('alarm');
+    void b.offsetWidth;
+    b.classList.add('alarm');
+
+    const { lv, par } = bfs(targets);
+    const mx = Math.max(0, ...Object.values(lv));
+    let L = 0;
+    if (mx > 0) {
+      const iv = setInterval(() => {
+        L++;
+        const aff = allAff([...roots]);
+        Object.keys(lv).filter(i => lv[i] === L).forEach(i => {
+          if (!shown.has(i) && aff.has(i)) {
+            shown.add(i);
+            AQ.push({ s: 'AVISO', m: nm(i) + ' degradado por ' + nm(par[i]) });
+          }
+        });
+        if (L >= mx) {
+          clearInterval(iv);
+          T = T.filter(x => x !== iv);
+          ev('Propagación completada');
+        }
+        render();
+      }, 650);
+      T.push(iv);
+    }
+  });
+  render();
+  return targets;
+}
+
+function fail(id) {
+  return failMany([id]).length > 0;
+}
+
+function recoverMany(list) {
+  const targets = list.filter(id => roots.has(id));
+  if (!targets.length) return [];
+  act(() => {
+    targets.forEach(id => {
+      roots.delete(id);
+      AQ.push({ s: 'INFO', m: nm(id) + ' restaurado' });
+      logl('', nm(id) + ' restaurado y en línea');
+    });
+    clearT();
+    shown = allAff([...roots]);
+    ev('Recuperado ' + targets.map(nm).join(', '));
+  });
+  render();
+  return targets;
+}
+
+function recover(id) {
+  return recoverMany([id]).length > 0;
+}
+
+function undo() {
+  const p = UN.pop();
+  if (!p) return false;
+  clearT();
+  roots = new Set(p);
+  shown = allAff(p);
+  ev('Deshacer acción');
+  render();
+  return true;
+}
+
+function toggleNode(id) {
+  if (selected.has(id)) {
+    selected.delete(id);
+    if (lastSel === id) lastSel = [...selected].pop() || id;
+  } else {
+    selected.add(id);
+    lastSel = id;
+  }
+  render();
+}
+
+function render() {
+  const R = cur(), { par } = bfs(R), E = $('#E'), V = $('#V');
+  E.innerHTML = V.innerHTML = '';
+
+  ids.forEach(a => dep(a).forEach(b => {
+    const x1 = N[a][1], y1 = N[a][2], x2 = N[b][1], y2 = N[b][2];
+    const dx = x2 - x1, dy = y2 - y1, dist = Math.hypot(dx, dy) || 1;
+    const sx = x1 + (dx / dist) * (NODE_R + 2);
+    const sy = y1 + (dy / dist) * (NODE_R + 2);
+    const ex = x2 - (dx / dist) * (NODE_R + 6);
+    const ey = y2 - (dy / dist) * (NODE_R + 6);
+    const hot = status(b, R) !== 'ok' && status(a, R) !== 'ok';
+
+    const l = document.createElementNS(SV, 'line');
+    l.setAttribute('x1', sx.toFixed(1));
+    l.setAttribute('y1', sy.toFixed(1));
+    l.setAttribute('x2', ex.toFixed(1));
+    l.setAttribute('y2', ey.toFixed(1));
+    l.setAttribute('class', 'ed' + (hot ? ' hot' : ''));
+    l.setAttribute('marker-end', hot ? 'url(#ar-hot)' : 'url(#ar)');
+    E.appendChild(l);
+  }));
+
+  ids.forEach(i => {
+    const isSel = selected.has(i);
+    const g = document.createElementNS(SV, 'g');
+    g.setAttribute('class', 'nd s-' + status(i, R) + (isSel ? ' sel' : ''));
+    g.innerHTML = `
+      <circle class="halo" cx="${N[i][1]}" cy="${N[i][2]}" r="${NODE_R + 7}"/>
+      <circle class="core" cx="${N[i][1]}" cy="${N[i][2]}" r="${NODE_R}"/>
+      <text x="${N[i][1]}" y="${N[i][2] + 5}">${nm(i)}</text>
+    `;
+    g.onclick = () => toggleNode(i);
+    V.appendChild(g);
+  });
+
+  const c = { ok: 0, deg: 0, fail: 0 };
+  ids.forEach(i => c[status(i, R)]++);
+  $('#kp').innerHTML = `
+    <span class="c-ok">OPERATIVOS <b>${c.ok}</b></span>
+    <span class="c-deg">DEGRADADOS <b>${c.deg}</b></span>
+    <span class="c-fail">CAÍDOS <b>${c.fail}</b></span>
+  `;
+
+  $('#ban').textContent = view ? 'MODO HISTORIAL: visualizando instantánea pasada.' : '';
+
+  const selList = [...selected];
+  if (selList.length) {
+    $('#sel').innerHTML = `<span>Seleccionados (<strong>${selList.length}</strong>): ${selList.map(nm).join(' · ')}</span><span>Clic para marcar/desmarcar</span>`;
+  } else {
+    $('#sel').innerHTML = `<span>Ningún nodo seleccionado</span><span>Haz clic en las casillas del mapa</span>`;
+  }
+
+  const canFail = selList.some(id => !roots.has(id)) && !view;
+  const canRec = selList.some(id => roots.has(id)) && !view;
+  $('#bf').disabled = !canFail;
+  $('#br').disabled = !canRec;
+  $('#bc').disabled = !selList.length;
+  $('#bu').disabled = !UN.size;
+
+  const ch = {};
+  Object.keys(par).forEach(v => (ch[par[v]] = ch[par[v]] || []).push(v));
+  const o = [], pre = (u, d) => {
+    o.push('  '.repeat(d) + (d ? '└ ' : '') + nm(u));
+    (ch[u] || []).forEach(v => pre(v, d + 1));
+  };
+  o.push(R.length ? 'IMPACTO EN CASCADA (BFS):' : 'Sin fallas activas en la red.');
+  R.forEach(r => pre(r, 0));
+
+  const focusNode = selected.has(lastSel) ? lastSel : (selList[0] || 'db');
+  o.push('', 'DEPENDENCIAS DE ' + nm(focusNode).toUpperCase() + ' (DFS):');
+  dfs(focusNode).forEach(([i, d]) => o.push('  '.repeat(d) + (d ? '└ ' : '') + nm(i)));
+  $('#tr').textContent = o.join('\n');
+
+  $('#al').innerHTML = AQ.items().map(a => `<div class="li">[${a.s}] ${a.m}</div>`).join('') || '<div class="li">Cola vacía.</div>';
+  $('#ba').disabled = !AQ.size;
+
+  $('#tl').innerHTML = TL.all().slice(-8).map(n => `<div class="li ${n === TL.cur ? 'cur' : ''}">${n.v.t} · ${n.v.msg}</div>`).join('') || '<div class="li">Sin eventos.</div>';
+}
+
+const jump = () => {
+  if (TL.cur) view = TL.cur === TL.tail ? null : TL.cur.v.snap;
+  render();
+};
+
+$('#bf').onclick = () => failMany([...selected]);
+$('#br').onclick = () => recoverMany([...selected]);
+$('#bc').onclick = () => { selected.clear(); render(); };
+$('#bu').onclick = undo;
+$('#ba').onclick = () => { const a = AQ.shift(); if (a) ev('Alerta atendida: ' + a.m); render(); };
+$('#bp').onclick = () => { TL.prev(); jump(); };
+$('#bn').onclick = () => { TL.next(); jump(); };
+$('#bz').onclick = () => {
+  clearT();
+  roots = new Set();
+  shown = new Set();
+  view = null;
+  AQ.clear();
+  UN.a = [];
+  ev('Sistema reiniciado');
+  logl('', 'Sistema reiniciado: todos los servicios en línea');
+  render();
+};
+
+document.querySelectorAll('[data-go]').forEach(a => a.onclick = () => go(a.dataset.go));
+const go = id => {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// Efecto de scroll suave
+const RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
+let tk = false;
+function fx() {
+  tk = false;
+  const H = innerHeight;
+  document.querySelectorAll('.rv').forEach(e => {
+    const r = e.getBoundingClientRect();
+    let d = 0, g = 1;
+    if (r.top > H * .68) d = (r.top - H * .68) / (H * .32);
+    else if (r.bottom < H * .32) { d = (H * .32 - r.bottom) / (H * .32); g = -1; }
+    const a = Math.min(1, d);
+    if (a < .001) { e.style.cssText = ''; return; }
+    e.style.opacity = (1 - a * .85).toFixed(2);
+    e.style.filter = `blur(${(a * 3.5).toFixed(1)}px)`;
+    e.style.transform = `perspective(1100px) rotateX(${(-g * a * 7).toFixed(2)}deg) translateY(${(g * a * 24).toFixed(1)}px)`;
+    e.style.pointerEvents = a > .65 ? 'none' : '';
+  });
+}
+if (!RM) {
+  addEventListener('scroll', () => { if (!tk) { tk = true; requestAnimationFrame(fx); } }, { passive: true });
+  addEventListener('resize', fx);
+  fx();
+}
+
+// Monitor visual en vivo
+const MH = {};
+ids.forEach(i => {
+  MH[i] = Array(24).fill(40);
+  const d = document.createElement('div');
+  d.className = 'tile';
+  d.id = 't_' + i;
+  d.innerHTML = `<b>${nm(i)}</b> <span class="v"></span><svg viewBox="0 0 69 26" preserveAspectRatio="none"><polyline points=""/></svg>`;
+  $('#mon').appendChild(d);
+});
+
+function logl(c, t) {
+  const p = document.createElement('div');
+  p.className = c;
+  p.textContent = new Date().toLocaleTimeString('es') + '  ' + t;
+  const k = $('#con');
+  k.appendChild(p);
+  while (k.children.length > 9) k.removeChild(k.firstChild);
+}
+
+setInterval(() => {
+  if (document.hidden) return;
+  const S = {};
+  ids.forEach(i => {
+    const s = S[i] = status(i), h = MH[i];
+    h.push(s === 'ok' ? 35 + Math.random() * 55 : s === 'deg' ? 8 + Math.random() * 18 : 0);
+    h.shift();
+    const t = $('#t_' + i);
+    t.className = 'tile ' + s;
+    t.querySelector('.v').textContent = s === 'fail' ? 'CAÍDO' : s === 'deg' ? 'LENTO ' + (300 + Math.random() * 500 | 0) + ' ms' : (8 + Math.random() * 30 | 0) + ' ms';
+    t.querySelector('polyline').setAttribute('points', h.map((x, k) => `${k * 3},${25 - x / 100 * 23}`).join(' '));
+  });
+  const bad = ids.filter(x => S[x] !== 'ok');
+  const i = bad.length && Math.random() < .6 ? bad[Math.random() * bad.length | 0] : ids[Math.random() * ids.length | 0];
+  const s = S[i];
+  if (s === 'ok') logl('', `${nm(i)} ← ${['GET /estado', 'POST /evento', 'GET /datos', 'sync'][Math.random() * 4 | 0]} 200 OK`);
+  else if (s === 'deg') logl('w', `${nm(i)} WARN latencia elevada, reintentando…`);
+  else logl('e', `${nm(i)} ERROR 503 servicio no disponible`);
+}, 800);
+
+// ---- JARVIS: Mayordomo formal, directo, navegación total ----
+const KB = 'SENTINEL Ops: simulador de infraestructura digital. Secciones: Inicio (s1), Mapa y Monitor (s2), Alertas (s3), Impacto (s4), Historial (s5), JARVIS (s6). Nodos: Web, Balanceador, CDN, API, Worker, Auth, Caché, Mensajería, Base de datos, Storage.';
+const nz = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = s => nz(s).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const finds = q => ids.filter(i => q.includes(nz(nm(i))) || new RegExp('\\b' + i + '\\b').test(q) || (i === 'db' && /datos/.test(q)));
+
+const SEC = {
+  s1: /inicio|principio|portada|arriba|seccion 1|uno/,
+  s2: /mapa|grafo|monitor|servicios|ejecucion|nodos|seccion 2|dos/,
+  s3: /alerta|cola|avisos|seccion 3|tres/,
+  s4: /impacto|arbol|dependencias|seccion 4|cuatro/,
+  s5: /historial|linea de tiempo|tiempo|eventos|seccion 5|cinco/,
+  s6: /jarvis|asistente|microfono|voz|configuracion|seccion 6|seis/
+};
+const SEC_NM = { s1: 'Inicio', s2: 'Mapa y Monitor', s3: 'Alertas', s4: 'Impacto', s5: 'Historial', s6: 'JARVIS' };
+
+function path(a, b) {
+  const q = [[a]], seen = new Set([a]);
+  while (q.length) {
+    const p = q.shift(), u = p[p.length - 1];
+    if (u === b) return p;
+    dep(u).forEach(v => {
+      if (!seen.has(v)) { seen.add(v); q.push([...p, v]); }
+    });
+  }
+  return null;
+}
+const impact = i => Object.keys(bfs([i]).lv).length - 1;
+
+function rules(t) {
+  const q = nz(t), F = finds(q), f = F[0], k = Object.keys(SEC).find(k => SEC[k].test(q));
+  if (k && (/lleva|ve a|ir a|muestra|abre|baja|sube|pasa|entra|ir al|vamos/.test(q) || q.split(' ').length <= 3)) {
+    go(k);
+    return `Enseguida, señor. Nos encontramos en ${SEC_NM[k]}.`;
+  }
+  if (/presentacion|recorrido|tour|explica/.test(q)) { setTimeout(tour, 300); return 'Con mucho gusto, señor. Inicio el recorrido.'; }
+  if (/ayuda|comandos/.test(q)) return 'Puedo provocar o restaurar fallas múltiples, simular caos, atender alertas y llevarle a cualquier apartado, señor.';
+  if (/deshac/.test(q)) return undo() ? 'Acción deshecha, señor.' : 'No hay acciones previas que deshacer, señor.';
+  if (/reinici/.test(q)) { $('#bz').click(); return 'Sistema reiniciado por completo, señor.'; }
+  if (/recuper|repar|levant|restaur|arregla/.test(q)) {
+    if (/todo|todos/.test(q)) {
+      const n = roots.size;
+      recoverMany([...roots]);
+      return n ? `He restaurado los ${n} nodos afectados, señor.` : 'Todos los sistemas operan con normalidad, señor.';
+    }
+    if (F.length) {
+      const ok = recoverMany(F);
+      return ok.length ? `Restaurando ${ok.map(nm).join(' y ')}, señor.` : 'Los nodos indicados no presentan falla raíz, señor.';
+    }
+    return 'Indíqueme qué componente desea restaurar, señor.';
+  }
+  if (/caos|aleatori|simulacro/.test(q)) {
+    const c = ids.filter(i => !roots.has(i)), n = /varios|multiple|doble|dos/.test(q) ? 2 : 1, p = [];
+    for (let j = 0; j < n && c.length; j++) p.push(c.splice(Math.random() * c.length | 0, 1)[0]);
+    if (!p.length) return 'Toda la infraestructura ya está caída, señor.';
+    selected = new Set(p);
+    lastSel = p[0];
+    go('s2');
+    failMany(p);
+    return `Simulacro ejecutado en ${p.map(nm).join(' y ')}, señor.`;
+  }
+  if (/atiende|atender/.test(q)) {
+    const a = AQ.shift();
+    if (!a) return 'No hay alertas pendientes, señor.';
+    ev('Alerta atendida: ' + a.m);
+    render();
+    return `Incidencia atendida: ${a.m}, señor.`;
+  }
+  if (/alerta/.test(q)) {
+    const it = AQ.items();
+    return it.length ? `Hay ${it.length} alertas en cola. La primera es: ${it[0].m}, señor.` : 'La cola de alertas está despejada, señor.';
+  }
+  if (/retroced|atras|anterior/.test(q)) { $('#bp').click(); return 'Retrocediendo al evento anterior, señor.'; }
+  if (/adelante|siguiente/.test(q)) { $('#bn').click(); return 'Avanzando al siguiente evento, señor.'; }
+  if (F.length > 1 && /camino|ruta|relacion/.test(q)) {
+    const p = path(F[0], F[1]) || path(F[1], F[0]);
+    return p ? 'La ruta es: ' + p.map(nm).join(' hacia ') + ', señor.' : 'No existe ruta directa entre esos nodos, señor.';
+  }
+  if (f && /de que depende|dependencias|necesita/.test(q)) {
+    const d = dfs(f).slice(1).map(x => nm(x[0]));
+    return d.length ? `${nm(f)} depende de ${d.join(', ')}, señor.` : `${nm(f)} no tiene dependencias, señor.`;
+  }
+  if (f && /quien depende|lo necesitan/.test(q)) {
+    const l = Object.keys(bfs([f]).lv).filter(i => i !== f).map(nm);
+    return l.length ? `Dependen de ${nm(f)}: ${l.join(', ')}, señor.` : `Ningún servicio depende de ${nm(f)}, señor.`;
+  }
+  if (F.length && /selecciona|elige|marca/.test(q)) {
+    F.forEach(id => selected.add(id));
+    lastSel = F[0];
+    go('s2');
+    render();
+    return `Seleccionados ${F.map(nm).join(' y ')}, señor.`;
+  }
+  if (F.length && /que pasa|si cae|si falla|impacto|afecta/.test(q)) {
+    const l = Object.keys(bfs(F).lv).filter(i => !F.includes(i)).map(nm);
+    return l.length ? `Afectaría a ${l.length} servicios: ${l.join(', ')}, señor.` : 'No tendría impacto externo, señor.';
+  }
+  if (F.length && /provoc|tumba|apaga|cae|caiga|falla|fallo/.test(q)) {
+    selected = new Set(F);
+    lastSel = F[0];
+    go('s2');
+    const ok = failMany(F);
+    return ok.length ? `Falla provocada en ${ok.map(nm).join(' y ')}, señor.` : 'Esos nodos ya se encuentran caídos, señor.';
+  }
+  if (/critic|importante|riesgo|peor/.test(q)) {
+    const b = ids.map(i => [i, impact(i)]).sort((a, b) => b[1] - a[1])[0];
+    return `El punto más crítico es ${nm(b[0])}, compromete a ${b[1]} servicios, señor.`;
+  }
+  if (/\bestado\b|resumen|como esta/.test(q)) {
+    return $('#kp').textContent.replace(/\s+/g, ' ').trim() + `. Alertas: ${AQ.size}, señor.`;
+  }
+  return null;
+}
+
+function small(q) {
+  if (q.split(' ').length > 8) return null;
+  if (/como estas|que tal/.test(q)) return 'Todos los sistemas nominales, señor. ¿En qué puedo asistirle?';
+  if (/^(hola|hey|buenas|buenos dias|buenas tardes|buenas noches)/.test(q)) return 'A sus órdenes, señor. ¿Qué instrucción desea ejecutar?';
+  if (/gracias/.test(q)) return 'Es un placer servirle, señor.';
+  if (/quien eres|que eres/.test(q)) return 'Soy JARVIS, su asistente de operaciones en SENTINEL Ops, señor.';
+  return null;
+}
+
+const hist = [];
+let SM, D = null, rec = null, conv = false, tok = 0, st = 'idle', VZ = null, VOICES = [], lastReply = '', muteUntil = 0;
+const LB = {
+  idle: 'Pulse para hablar',
+  listening: 'Escuchando… (pulse para detener)',
+  thinking: 'Procesando…',
+  speaking: 'Hablando… (pulse para detener)',
+  error: 'Voz no disponible'
+};
+
+function setS(s, x) {
+  st = s;
+  ['#orb', '#orb2', '#orb3'].forEach(i => $(i).className = 'orb ' + s);
+  const txt = x || LB[s];
+  $('#vl').textContent = txt;
+  $('#vl2').textContent = txt;
+  $('#orb2').textContent = (conv || s === 'speaking' || s === 'listening') ? '⏹️' : '🎙️';
+}
+
+// Priorización estricta de la voz exactamente llamada "español"
+function pickVoice() {
+  try {
+    const all = speechSynthesis.getVoices();
+    const es = all.filter(x => /^es/i.test(x.lang) || /español|spanish/i.test(x.name));
+    VOICES = es.length ? es : all;
+
+    let exact = VOICES.find(x => x.name.trim().toLowerCase() === 'español')
+             || VOICES.find(x => /^español$/i.test(x.name.replace(/Microsoft |Google /g, '').trim()))
+             || VOICES.find(x => /^es-ES$/i.test(x.lang) && !/helena|laura/i.test(x.name))
+             || VOICES[0]
+             || null;
+
+    const s = $('#vsel');
+    s.innerHTML = '';
+    VOICES.forEach((x, i) => s.add(new Option(x.name, i)));
+    if (!VOICES.length) s.add(new Option('español', 0));
+
+    if (!VZ || !VOICES.includes(VZ)) VZ = exact;
+    s.value = Math.max(0, VOICES.indexOf(VZ));
+  } catch (e) {}
+}
+try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
+$('#vsel').onchange = e => {
+  VZ = VOICES[+e.target.value] || null;
+  tok++;
+  try { speechSynthesis.cancel(); } catch (x) {}
+  say('Voz configurada, señor.');
+};
+
+// Síntesis con voz "español", timbre grave formal de mayordomo
+const spk = t => new Promise(r => {
+  const u = new SpeechSynthesisUtterance(t);
+  if (VZ) { u.voice = VZ; u.lang = VZ.lang; } else u.lang = 'es-ES';
+  u.pitch = 0.65;
+  u.rate = 0.93;
+  u.volume = 1;
+  u.onend = r;
+  u.onerror = r;
+  try { speechSynthesis.speak(u); } catch (e) { r(); }
+});
+
+async function say(t, my = tok) {
+  const ps = t.replace(/\s+/g, ' ').split(/(?<=[.!?:;])\s+/).filter(Boolean);
+  for (const p of ps) {
+    if (my !== tok) return;
+    await spk(p);
+    if (my !== tok) return;
+    await sleep(160);
+  }
+}
+
+const TOUR = [
+  ['s1', 'Bienvenido a SENTINEL Ops, señor. Soy JARVIS, a su entera disposición.'],
+  ['s2', 'Aquí dispone del mapa táctico con selección múltiple y el monitor de telemetría a su derecha.'],
+  ['s3', 'En alertas se gestionan las incidencias en estricto orden de llegada.'],
+  ['s4', 'En impacto podrá examinar la cascada y las dependencias de cada nodo.'],
+  ['s5', 'El historial le permite retroceder o avanzar en la línea temporal.'],
+  ['s6', 'Pulse la burbuja inferior derecha cuando desee darme una instrucción.']
+];
+
+async function tour() {
+  const my = ++tok;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  if (!window.speechSynthesis) { setS('error', 'Sin síntesis de voz'); return; }
+  $('#ov').classList.add('off');
+  conv = false;
+  setS('speaking');
+  for (const [id, t] of TOUR) {
+    if (my !== tok) return;
+    go(id);
+    await say(t, my);
+    if (my !== tok) return;
+    await sleep(220);
+  }
+  if (my === tok) setS('idle', 'Pulse para hablar');
+}
+
+function micErr(e) {
+  const c = String(e && (e.error || e.code || e.message || e));
+  const den = /not-allowed|not_granted|denied|permission/i.test(c);
+  conv = false;
+  setS('error', den ? 'Micrófono bloqueado' : 'No le escuché');
+  if (den) $('#ms').textContent = 'Permiso del micrófono: denegado en el navegador.';
+}
+
+function startConv() {
+  tok++;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  conv = true;
+  $('#bm').classList.remove('pulse');
+  setS('listening', 'Activando micrófono…');
+  if (D) { D.start().catch(micErr); return; }
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!R) { conv = false; setS('error', 'Use Chrome o Edge'); return; }
+  rec = new R();
+  rec.lang = 'es-ES';
+  rec.continuous = true;
+  rec.interimResults = false;
+  rec.onstart = () => {
+    if (st !== 'speaking' && st !== 'thinking') setS('listening');
+    $('#ms').textContent = 'Permiso del micrófono: concedido';
+  };
+  rec.onresult = e => {
+    const r = e.results[e.results.length - 1];
+    if (r.isFinal) onHeard(r[0].transcript);
+  };
+  rec.onerror = x => { if (!/no-speech|aborted/.test(x.error)) micErr(x); };
+  rec.onend = () => { if (conv && st !== 'error') { try { rec.start(); } catch (e) {} } };
+  try { rec.start(); } catch (e) { micErr(e); }
+}
+
+function endConv() {
+  conv = false;
+  tok++;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  try { D ? D.stop() : rec && rec.stop(); } catch (e) {}
+  setS('idle');
+}
+
+// Alternar directamente con un solo toque: hablar <-> detener
+function toggleJarvis() {
+  if (conv || st === 'speaking' || st === 'listening' || st === 'thinking') endConv();
+  else startConv();
+}
+
+const STOPW = /^(para|detente|silencio|callate|basta|detener)\b/;
+function onHeard(t) {
+  if (!conv || !t || !t.trim()) return;
+  const a = norm(t);
+  if (st === 'speaking' && STOPW.test(a) && a.split(' ').length < 4) {
+    tok++;
+    try { speechSynthesis.cancel(); } catch (e) {}
+    setS('listening');
+    return;
+  }
+  if (st === 'speaking' || st === 'thinking' || Date.now() < muteUntil || (a.length > 5 && norm(lastReply).includes(a))) return;
+  handle(t);
+}
+
+async function handle(t) {
+  setS('thinking');
+  const my = tok, q = nz(t);
+  let r = null, fin = false;
+  hist.push('Usuario: ' + t);
+
+  if (/es todo por (hoy|ahora)|eso es todo|hasta aqui|pausa|detente/.test(q)) {
+    r = 'En pausa, señor. Quedo a su disposición.';
+    fin = true;
+  } else {
+    r = rules(t) || small(q);
+  }
+
+  if (!r) {
+    try {
+      SM = SM || (window.claude && await claude.use('sample'));
+      if (!SM) throw 0;
+      const ctx = `Estado: ${$('#kp').textContent.replace(/\s+/g, ' ')}. Alertas: ${AQ.size}. Raíz: ${[...roots].map(nm).join(', ') || 'ninguna'}.`;
+      const o = await SM(`Eres JARVIS, un mayordomo británico formal, distinguido y elegante que asiste en SENTINEL Ops. Responde de forma ULTRA DIRECTA y concisa: máximo 1 o 2 frases muy cortas (menos de 22 palabras), usando expresiones formales como "señor", "enseguida" o "a sus órdenes". Si la pregunta no trata sobre esta página, responde únicamente: "Disculpe, señor, solo atiendo consultas de SENTINEL Ops."\nINFO: ${KB}\n${ctx}\nConsulta: ${t}`, { cache: false, modelTier: 'quick' });
+      r = o.text;
+    } catch (e) {
+      r = 'A sus órdenes, señor. Puede indicarme un comando del simulador o sección.';
+    }
+  }
+
+  hist.push('JARVIS: ' + r);
+  lastReply = r;
+  if (my !== tok) return;
+  setS('speaking');
+  await say(r, my);
+  muteUntil = Date.now() + 1200;
+  if (my !== tok) return;
+  if (fin) { endConv(); return; }
+  setS(conv ? 'listening' : 'idle');
+}
+
+(async () => {
+  try { D = window.claude ? await claude.use('dictation') : null; } catch (e) { D = null; }
+  if (D) {
+    D.onFinal(({ text }) => onHeard(text));
+    D.onState(({ state, reason }) => {
+      if (state === 'listening') {
+        $('#ms').textContent = 'Permiso del micrófono: concedido';
+        if (conv && st !== 'speaking' && st !== 'thinking') setS('listening');
+      } else if (conv && st !== 'speaking' && st !== 'thinking') {
+        if (/denied|not_granted/i.test(reason || '')) micErr(reason);
+        else { conv = false; setS('idle'); }
+      }
+    });
+  }
+})();
+
+try {
+  navigator.permissions.query({ name: 'microphone' }).then(p => {
+    const u = () => {
+      $('#ms').textContent = 'Permiso del micrófono: ' + ({
+        granted: 'concedido',
+        denied: 'denegado (actívelo en el candado del navegador)',
+        prompt: 'pendiente, pulse para autorizar'
+      }[p.state] || p.state);
+    };
+    u();
+    p.onchange = u;
+  }).catch(() => {});
+} catch (e) {}
+
+$('#orb').onclick = $('#orb2').onclick = toggleJarvis;
+$('#bm').onclick = startConv;
+$('#bt').onclick = $('#bs').onclick = $('#orb3').onclick = tour;
+$('#bk').onclick = () => $('#ov').classList.add('off');
+
+setS('idle');
+ev('Sistema iniciado');
+render();
+</script>
+</body>
+</html>
